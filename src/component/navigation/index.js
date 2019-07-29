@@ -181,7 +181,7 @@ const Navigation = props => {
           </List>
         </SwipeableDrawer>
       </div>
-      <div style={{ paddingTop: '100px' }}>{props.children}</div>
+      <div style={{ paddingTop: '250px' }}>{props.children}</div>
     </div>
   );
 };

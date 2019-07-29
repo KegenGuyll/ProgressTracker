@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Card, CardContent } from '@material-ui/core';
+import React from 'react';
 
 export const Settings = props => {
   return (
