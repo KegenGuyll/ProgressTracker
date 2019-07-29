@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-export const Dashboard = props => {
+export const Explore = props => {
   return (
     <div>
-      <h1 style={{ color: 'white' }}>Dashboard</h1>
+      <h1 style={{ color: 'white' }}>Explore</h1>
     </div>
   );
 };
