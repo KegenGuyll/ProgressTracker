@@ -30,7 +30,7 @@ class LineChart extends React.Component {
           },
           theme: 'dark',
           marker: {
-            show: true
+            show: false
           }
         },
         dataLabels: {
@@ -45,10 +45,11 @@ class LineChart extends React.Component {
           align: 'left'
         },
         markers: {
-          size: 0
+          size: 0,
+          colors: ['#fff']
         },
         xaxis: {
-          categories: ['week 1', 'week 2', 'week 3', 'week 4'],
+          categories: props.data.xaxis.categories,
           labels: {
             show: false
           },
@@ -70,8 +71,8 @@ class LineChart extends React.Component {
       },
       series: [
         {
-          name: 'Sqaut',
-          data: [100, 140, 210, 200]
+          name: props.data.series[0].name,
+          data: props.data.series[0].data
         }
       ]
     };

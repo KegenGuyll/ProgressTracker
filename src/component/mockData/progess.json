@@ -1,0 +1,24 @@
+[
+  {
+    "xaxis": {
+      "categories": ["week 1", "week 2", "week 3", "week 4", "week 5", "week 6"]
+    },
+    "series": [
+      {
+        "name": "Bench",
+        "data": [100, 140, 145, 150, 140, 160]
+      }
+    ]
+  },
+  {
+    "xaxis": {
+      "categories": ["week 1", "week 2", "week 3", "week 4", "week 5"]
+    },
+    "series": [
+      {
+        "name": "Squat",
+        "data": [100, 140, 210, 200, 250]
+      }
+    ]
+  }
+]
