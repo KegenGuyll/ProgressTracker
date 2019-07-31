@@ -4,23 +4,21 @@ import {
   Grid,
   Card,
   CardContent,
-  CardActionArea,
   CardActions,
   Button,
-  InputBase,
   TextField,
   InputAdornment,
   IconButton
 } from '@material-ui/core';
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { makeStyles } from '@material-ui/core/styles';
-import { ThemeProvider } from '@material-ui/styles';
+import { toast, ToastContainer } from 'react-toastify';
 
 export const Login = props => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [switchPage, setSwitchPage] = useState(false);
+  const Googleprovider = new firebase.auth.GoogleAuthProvider();
 
   const useStyles = makeStyles({
     card: {
@@ -58,6 +56,25 @@ export const Login = props => {
     setShowPassword(!showPassword);
   };
 
+  const handleSignIn = provider => {
+    firebase
+      .auth()
+      .signInWithRedirect(provider)
+      .then(result => {
+        console.log(result);
+      })
+      .catch(err => {
+        toast.error(err.message, {
+          position: 'bottom-center',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true
+        });
+      });
+  };
+
   const attemptAuth = async method => {
     try {
       const auth = await firebase.auth();
@@ -68,7 +85,14 @@ export const Login = props => {
         await auth.createUserWithEmailAndPassword(email, password);
       }
     } catch (err) {
-      console.log(err);
+      toast.error(err.message, {
+        position: 'bottom-center',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
     }
   };
 
@@ -122,8 +146,21 @@ export const Login = props => {
               </Button>
             </CardActions>
           </Card>
+          <Button
+            onClick={() => handleSignIn(Googleprovider)}
+            style={{ backgroundColor: '#323232' }}
+            variant='outlined'
+            fullWidth
+          >
+            <img
+              height='25'
+              src='https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg'
+              alt='Google Sign In'
+            />
+          </Button>
         </Grid>
       </div>
+      <ToastContainer />
     </div>
   );
 };

@@ -7,6 +7,7 @@ import { Explore } from './component/explore';
 import { Friends } from './component/friends';
 import { Progress } from './component/progress';
 import { Settings } from './component/settings';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
