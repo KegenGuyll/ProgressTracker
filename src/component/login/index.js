@@ -13,12 +13,38 @@ import {
   IconButton
 } from '@material-ui/core';
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
+import { makeStyles } from '@material-ui/core/styles';
+import { ThemeProvider } from '@material-ui/styles';
 
 export const Login = props => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [switchPage, setSwitchPage] = useState(false);
+
+  const useStyles = makeStyles({
+    card: {
+      background: '#323232',
+      color: '#fff',
+      minWidth: '300px',
+      marginBottom: '5px'
+    },
+    button: {
+      color: '#fff'
+    },
+    root: {
+      '& label.Mui-focused': {
+        color: '#000000'
+      },
+      '& .MuiInput-underline:after': {
+        borderBottomColor: '#000000'
+      },
+      '& .MuiInputBase-input': {
+        color: '#b0b0b0'
+      }
+    }
+  });
+  const classes = useStyles();
 
   const handleEmail = event => {
     setEmail(event.target.value);
@@ -47,18 +73,20 @@ export const Login = props => {
   };
 
   return (
-    <div style={{ height: '100vh' }}>
+    <div style={{ height: '75vh' }}>
       <div style={{ paddingTop: '33vh' }}>
         <Grid container justify='center' alignContent='center'>
-          <Card>
+          <Card className={classes.card}>
             <CardContent>
               <TextField
+                className={classes.root}
                 fullWidth
                 placeholder='Email'
                 type='email'
                 onChange={handleEmail}
               />
               <TextField
+                className={classes.root}
                 onChange={handlePassword}
                 InputProps={{
                   endAdornment: (
@@ -71,11 +99,6 @@ export const Login = props => {
                       </IconButton>
                     </InputAdornment>
                   )
-                  // classes: {
-                  //   root: classes.cssOutlinedInput,
-                  //   focused: classes.cssFocused,
-                  //   notchedOutline: classes.notchedOutline
-                  // }
                 }}
                 fullWidth
                 placeholder='Password'
@@ -83,10 +106,18 @@ export const Login = props => {
               />
             </CardContent>
             <CardActions>
-              <Button onClick={() => attemptAuth('signin')} variant='outlined'>
+              <Button
+                className={classes.button}
+                onClick={() => attemptAuth('signin')}
+                variant='outlined'
+              >
                 Login
               </Button>
-              <Button onClick={() => attemptAuth('signup')} variant='outlined'>
+              <Button
+                className={classes.button}
+                onClick={() => attemptAuth('signup')}
+                variant='outlined'
+              >
                 Sign Up
               </Button>
             </CardActions>
