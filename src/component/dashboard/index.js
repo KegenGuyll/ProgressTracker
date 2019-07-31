@@ -34,9 +34,9 @@ export const Dashboard = props => {
   const classes = useStyles();
   return (
     <Grid container alignContent='center' justify='center'>
-      {data.map(item => {
+      {data.map((item, index) => {
         return (
-          <ExpansionPanel className={classes.card}>
+          <ExpansionPanel key={index} className={classes.card}>
             <ExpansionPanelSummary
               expandIcon={<MdExpandMore />}
               aria-controls='Expand graph for data'

@@ -64,8 +64,6 @@ const Navigation = props => {
     setToggleDrawer(!toggleDrawer);
   };
 
-  console.log(props);
-
   const handleRoutes = async route => {
     await props.history.push(route);
     handleToggleDrawer();
