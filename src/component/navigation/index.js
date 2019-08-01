@@ -102,6 +102,7 @@ const Navigation = props => {
                           : 'https://michael-schacht.com/wp-content/uploads/2018/02/parkerheadshot.jpg'
                       }
                       className={classes.bigAvatar}
+                      alt='Profile Picture'
                     >
                       UN
                     </Avatar>
@@ -134,6 +135,7 @@ const Navigation = props => {
                       : 'https://michael-schacht.com/wp-content/uploads/2018/02/parkerheadshot.jpg'
                   }
                   className={classes.smallAvatar}
+                  alt='Profile Picture'
                 >
                   UN
                 </Avatar>
