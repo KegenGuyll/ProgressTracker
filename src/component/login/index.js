@@ -13,6 +13,7 @@ import {
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { makeStyles } from '@material-ui/core/styles';
 import { toast, ToastContainer } from 'react-toastify';
+import image from '../../images/running-256x256.png';
 
 export const Login = props => {
   const [email, setEmail] = useState('');
@@ -24,7 +25,7 @@ export const Login = props => {
     card: {
       background: '#323232',
       color: '#fff',
-      minWidth: '300px',
+      minWidth: '360px',
       marginBottom: '5px'
     },
     button: {
@@ -98,68 +99,72 @@ export const Login = props => {
 
   return (
     <div style={{ height: '75vh' }}>
-      <div style={{ paddingTop: '33vh' }}>
-        <Grid container justify='center' alignContent='center'>
-          <Card className={classes.card}>
-            <CardContent>
-              <TextField
-                className={classes.root}
-                fullWidth
-                placeholder='Email'
-                type='email'
-                onChange={handleEmail}
-              />
-              <TextField
-                className={classes.root}
-                onChange={handlePassword}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment>
-                      <IconButton
-                        aria-label='Toggle password visibility'
-                        onClick={ShowPassword}
-                      >
-                        {showPassword ? <MdVisibility /> : <MdVisibilityOff />}
-                      </IconButton>
-                    </InputAdornment>
-                  )
-                }}
-                fullWidth
-                placeholder='Password'
-                type={showPassword ? 'text' : 'password'}
-              />
-            </CardContent>
-            <CardActions>
-              <Button
-                className={classes.button}
-                onClick={() => attemptAuth('signin')}
-                variant='outlined'
-              >
-                Login
-              </Button>
-              <Button
-                className={classes.button}
-                onClick={() => attemptAuth('signup')}
-                variant='outlined'
-              >
-                Sign Up
-              </Button>
-            </CardActions>
-          </Card>
-          <Button
-            onClick={() => handleSignIn(Googleprovider)}
-            style={{ backgroundColor: '#323232' }}
-            variant='outlined'
-            fullWidth
-          >
-            <img
-              height='25'
-              src='https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg'
-              alt='Google Sign In'
+      <Grid container justify='center'>
+        <img
+          style={{ paddingTop: '15vh' }}
+          src='../../images/running-256x256.png'
+        />
+      </Grid>
+      <Grid container justify='center' alignContent='center'>
+        <Card className={classes.card}>
+          <CardContent>
+            <TextField
+              className={classes.root}
+              fullWidth
+              placeholder='Email'
+              type='email'
+              onChange={handleEmail}
             />
-          </Button>
-        </Grid>
-      </div>
+            <div style={{ height: '24px' }} />
+            <TextField
+              className={classes.root}
+              onChange={handlePassword}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment>
+                    <IconButton
+                      aria-label='Toggle password visibility'
+                      onClick={ShowPassword}
+                    >
+                      {showPassword ? <MdVisibility /> : <MdVisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
+              fullWidth
+              placeholder='Password'
+              type={showPassword ? 'text' : 'password'}
+            />
+          </CardContent>
+          <CardActions>
+            <Button
+              className={classes.button}
+              onClick={() => attemptAuth('signin')}
+              variant='outlined'
+            >
+              Login
+            </Button>
+            <Button
+              className={classes.button}
+              onClick={() => attemptAuth('signup')}
+              variant='outlined'
+            >
+              Sign Up
+            </Button>
+            <Button
+              onClick={() => handleSignIn(Googleprovider)}
+              style={{ backgroundColor: '#323232' }}
+              variant='outlined'
+            >
+              <img
+                height='25'
+                src='https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg'
+                alt='Google Sign In'
+              />
+            </Button>
+          </CardActions>
+        </Card>
+      </Grid>
       <ToastContainer />
     </div>
   );
