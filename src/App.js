@@ -9,10 +9,12 @@ import { Progress } from './component/progress';
 import { Settings } from './component/settings';
 import 'react-toastify/dist/ReactToastify.css';
 
-function App() {
+const App = props => {
+  console.log(props.user);
+
   return (
     <Router>
-      <Navigation>
+      <Navigation user={props.user}>
         <Switch>
           <Route exact path='/' component={Dashboard} />
           <Route exact path='/explore' component={Explore} />
@@ -23,6 +25,6 @@ function App() {
       </Navigation>
     </Router>
   );
-}
+};
 
 export default App;

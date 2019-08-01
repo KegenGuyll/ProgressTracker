@@ -52,6 +52,9 @@ const useStyles = makeStyles({
     width: 32,
     height: 32,
     float: 'right'
+  },
+  grow: {
+    flexGrow: 1
   }
 });
 
@@ -93,14 +96,22 @@ const Navigation = props => {
                 >
                   <Grid item xs={3}>
                     <Avatar
-                      src='https://michael-schacht.com/wp-content/uploads/2018/02/parkerheadshot.jpg'
+                      src={
+                        props.user.photoURL
+                          ? props.user.photoURL
+                          : 'https://michael-schacht.com/wp-content/uploads/2018/02/parkerheadshot.jpg'
+                      }
                       className={classes.bigAvatar}
                     >
                       UN
                     </Avatar>
                   </Grid>
                   <Grid item xs={3}>
-                    <Typography>User Name</Typography>
+                    <Typography>
+                      {props.user.displayName
+                        ? props.user.displayName
+                        : 'User Name'}
+                    </Typography>
                   </Grid>
                 </Grid>
               </Grid>
@@ -111,22 +122,22 @@ const Navigation = props => {
         <div>
           <AppBar className={classes.card}>
             <Toolbar>
-              <Grid>
-                <IconButton
-                  style={{ marginRight: '60vw' }}
-                  onClick={handleToggleDrawer}
+              <IconButton onClick={handleToggleDrawer}>
+                <MdMenu />
+              </IconButton>
+              <div className={classes.grow} />
+              <IconButton>
+                <Avatar
+                  src={
+                    props.user.photoURL
+                      ? props.user.photoURL
+                      : 'https://michael-schacht.com/wp-content/uploads/2018/02/parkerheadshot.jpg'
+                  }
+                  className={classes.smallAvatar}
                 >
-                  <MdMenu />
-                </IconButton>
-                <IconButton>
-                  <Avatar
-                    src='https://michael-schacht.com/wp-content/uploads/2018/02/parkerheadshot.jpg'
-                    className={classes.smallAvatar}
-                  >
-                    UN
-                  </Avatar>
-                </IconButton>
-              </Grid>
+                  UN
+                </Avatar>
+              </IconButton>
             </Toolbar>
           </AppBar>
         </div>
