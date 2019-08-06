@@ -45,7 +45,7 @@ export const Progress = props => {
       if (doc.exists) {
         setCurrentProgress(doc.data());
       } else {
-        return 'not found';
+        return 'did not find';
       }
     });
   };
