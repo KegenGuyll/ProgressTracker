@@ -5,7 +5,7 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import firebase from 'firebase';
 import { Login } from './component/login';
-import db from './firebaseConfig.js';
+import db from './credentials/firebaseConfig';
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {

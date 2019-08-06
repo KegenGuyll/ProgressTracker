@@ -33,13 +33,16 @@ export const Login = props => {
     },
     root: {
       '& label.Mui-focused': {
-        color: '#000000'
+        color: '#c3c3c3'
       },
       '& .MuiInput-underline:after': {
         borderBottomColor: '#000000'
       },
       '& .MuiInputBase-input': {
         color: '#b0b0b0'
+      },
+      '& .MuiFormLabel-root': {
+        color: '#c3c3c3'
       }
     }
   });
@@ -109,6 +112,7 @@ export const Login = props => {
         <Card className={classes.card}>
           <CardContent>
             <TextField
+              label='Email'
               className={classes.root}
               fullWidth
               placeholder='Email'
@@ -117,6 +121,7 @@ export const Login = props => {
             />
             <div style={{ height: '24px' }} />
             <TextField
+              label='Password'
               className={classes.root}
               onChange={handlePassword}
               InputProps={{

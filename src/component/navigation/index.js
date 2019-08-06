@@ -192,7 +192,11 @@ const Navigation = props => {
           </List>
         </SwipeableDrawer>
       </div>
-      <div style={{ paddingTop: '250px' }}>{props.children}</div>
+      {props.history.location.pathname === '/' ? (
+        <div style={{ paddingTop: '250px' }}>{props.children}</div>
+      ) : (
+        <div style={{ paddingTop: '75px' }}>{props.children}</div>
+      )}
     </div>
   );
 };

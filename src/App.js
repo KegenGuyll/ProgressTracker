@@ -10,8 +10,6 @@ import { Settings } from './component/settings';
 import 'react-toastify/dist/ReactToastify.css';
 
 const App = props => {
-  console.log(props.user);
-
   return (
     <Router>
       <Navigation user={props.user}>
