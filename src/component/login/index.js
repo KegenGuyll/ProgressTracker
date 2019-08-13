@@ -13,7 +13,6 @@ import {
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { makeStyles } from '@material-ui/core/styles';
 import { toast, ToastContainer } from 'react-toastify';
-import image from '../../images/running-256x256.png';
 
 export const Login = props => {
   const [email, setEmail] = useState('');
