@@ -23,8 +23,12 @@ import {
   TableHead,
   TableCell,
   TableRow,
-  TableBody
+  TableBody,
+  AppBar,
+  Toolbar,
+  IconButton
 } from '@material-ui/core';
+import { MdAdd, MdRemove, MdDelete } from 'react-icons/md';
 
 export const Progress = props => {
   const user = firebase.auth().currentUser;
@@ -45,14 +49,6 @@ export const Progress = props => {
 
   const handleCurrentProgess = async uid => {
     const docRef = db.collection('users').doc(uid);
-    // docRef.get().then(doc => {
-    //   if (doc.exists) {
-    //     setCurrentProgress(doc.data());
-    //     console.log(doc.data());
-    //   } else {
-    //     console.log('did not find');
-    //   }
-    // });
     docRef.onSnapshot(doc => {
       if (doc.exists) {
         setCurrentProgress(doc.data());
@@ -109,6 +105,9 @@ export const Progress = props => {
       '& .MuiButton-root.Mui-disabled': {
         color: '#5a5a5a'
       }
+    },
+    whiteIcon: {
+      color: '#fff'
     }
   });
 
@@ -246,6 +245,15 @@ export const Progress = props => {
   const handleMax = event => {
     setMax(event.target.value);
   };
+
+  const handleDelete = index => {
+    currentProgess.progress.exercise.splice(index, 1);
+
+    const docRef = db.collection('users').doc(user.uid);
+
+    docRef.set(currentProgess);
+  };
+
   return (
     <div>
       <Paper
@@ -415,61 +423,84 @@ export const Progress = props => {
             />
           </Card>
         ) : null}
+
         {currentProgess.length !== 0
-          ? currentProgess.progress.exercise.map(item =>
+          ? currentProgess.progress.exercise.map((item, index) =>
               tabValue === item.id ? (
-                <Card key={item.id}>
-                  <CardContent>
-                    <Typography style={{ textAlign: 'center' }} variant='h6'>
-                      {item.name}
-                    </Typography>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell align='center'>
-                            {item.exercise === 'cardio' ? 'Distance' : 'Reps'}
-                          </TableCell>
-                          <TableCell align='center'>
-                            {item.exercise === 'cardio' ? 'Time' : 'Sets'}
-                          </TableCell>
-                          {item.exercise === 'strength' ? (
-                            <TableCell align='center'>Max</TableCell>
-                          ) : null}
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {item.exercise === 'cardio'
-                          ? item.data.map(progress => {
-                              return (
-                                <TableRow key={progress.distance}>
-                                  <TableCell align='center'>
-                                    {progress.distance}
-                                  </TableCell>
-                                  <TableCell align='center'>
-                                    {progress.time}
-                                  </TableCell>
-                                </TableRow>
-                              );
-                            })
-                          : item.data.map(progress => {
-                              return (
-                                <TableRow key={progress.max}>
-                                  <TableCell align='center'>
-                                    {progress.reps}
-                                  </TableCell>
-                                  <TableCell align='center'>
-                                    {progress.sets}
-                                  </TableCell>
-                                  <TableCell align='center'>
-                                    {progress.max}
-                                  </TableCell>
-                                </TableRow>
-                              );
-                            })}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
+                <div key={item.id}>
+                  {currentProgess.length !== 0 && tabValue !== 0 ? (
+                    <Paper
+                      className={classes.card}
+                      style={{ flexGrow: 1, marginBottom: '15px' }}
+                    >
+                      <IconButton className={classes.whiteIcon}>
+                        <MdAdd />
+                      </IconButton>
+                      <IconButton className={classes.whiteIcon}>
+                        <MdRemove />
+                      </IconButton>
+                      <IconButton
+                        className={classes.whiteIcon}
+                        style={{ float: 'right' }}
+                        onClick={() => handleDelete(index)}
+                      >
+                        <MdDelete />
+                      </IconButton>
+                    </Paper>
+                  ) : null}
+                  <Card>
+                    <CardContent>
+                      <Typography style={{ textAlign: 'center' }} variant='h6'>
+                        {item.name}
+                      </Typography>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell align='center'>
+                              {item.exercise === 'cardio' ? 'Distance' : 'Reps'}
+                            </TableCell>
+                            <TableCell align='center'>
+                              {item.exercise === 'cardio' ? 'Time' : 'Sets'}
+                            </TableCell>
+                            {item.exercise === 'strength' ? (
+                              <TableCell align='center'>Max</TableCell>
+                            ) : null}
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {item.exercise === 'cardio'
+                            ? item.data.map(progress => {
+                                return (
+                                  <TableRow key={progress.distance}>
+                                    <TableCell align='center'>
+                                      {progress.distance}
+                                    </TableCell>
+                                    <TableCell align='center'>
+                                      {progress.time}
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })
+                            : item.data.map(progress => {
+                                return (
+                                  <TableRow key={progress.max}>
+                                    <TableCell align='center'>
+                                      {progress.reps}
+                                    </TableCell>
+                                    <TableCell align='center'>
+                                      {progress.sets}
+                                    </TableCell>
+                                    <TableCell align='center'>
+                                      {progress.max}
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </div>
               ) : null
             )
           : null}
