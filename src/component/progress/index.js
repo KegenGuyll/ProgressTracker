@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import firebase from 'firebase';
+import { makeStyles } from '@material-ui/core/styles';
 import db from '../../credentials/firebaseConfig';
 import {
   Paper,
@@ -11,20 +12,23 @@ import {
   Typography,
   List,
   ListItem,
-  Select,
-  MenuItem,
   FormControl,
   InputLabel,
   TextField,
   MobileStepper,
   Button,
   NativeSelect,
-  Input
+  Input,
+  Table,
+  TableHead,
+  TableCell,
+  TableRow,
+  TableBody
 } from '@material-ui/core';
 
 export const Progress = props => {
   const user = firebase.auth().currentUser;
-  const [currentProgess, setCurrentProgress] = useState({});
+  const [currentProgess, setCurrentProgress] = useState([]);
   const [activeStep, setActiveStep] = React.useState(0);
   const [tabValue, setTabValue] = useState(0);
   const [name, setName] = useState('');
@@ -41,41 +45,143 @@ export const Progress = props => {
 
   const handleCurrentProgess = async uid => {
     const docRef = db.collection('users').doc(uid);
-    await docRef.get().then(doc => {
+    // docRef.get().then(doc => {
+    //   if (doc.exists) {
+    //     setCurrentProgress(doc.data());
+    //     console.log(doc.data());
+    //   } else {
+    //     console.log('did not find');
+    //   }
+    // });
+    docRef.onSnapshot(doc => {
       if (doc.exists) {
         setCurrentProgress(doc.data());
+        console.log(doc.data());
       } else {
-        return 'did not find';
+        console.log('did not find');
       }
     });
+  };
+
+  const useStyles = makeStyles({
+    card: {
+      background: '#323232',
+      color: '#fff',
+      minWidth: '350px',
+      marginBottom: '5px',
+      '& .MuiMobileStepper-root': {
+        background: '#424242'
+      },
+      '& .MuiTab-textColorPrimary.Mui-selected': {
+        color: '#fff'
+      },
+      '& .MuiTabs-indicator': {
+        backgroundColor: '#fff'
+      },
+      '& .MuiTab-textColorPrimary': {
+        color: 'rgba(255, 255, 255, 0.54)'
+      }
+    },
+    root: {
+      '& label.Mui-focused': {
+        color: '#c3c3c3'
+      },
+      '& .MuiInput-underline:after': {
+        borderBottomColor: '#fff'
+      },
+      '& .MuiInputBase-input': {
+        color: '#b0b0b0'
+      },
+      '& .MuiFormLabel-root': {
+        color: '#c3c3c3'
+      }
+    },
+    progress: {
+      '& .MuiLinearProgress-colorPrimary': {
+        backgroundColor: '#fff'
+      },
+      '& .MuiLinearProgress-barColorPrimary': {
+        backgroundColor: '#212121'
+      },
+      '& .MuiButton-root': {
+        color: '#fff'
+      },
+      '& .MuiButton-root.Mui-disabled': {
+        color: '#5a5a5a'
+      }
+    }
+  });
+
+  const classes = useStyles();
+
+  const clearForm = async () => {
+    setName('');
+    setDistance('');
+    setExercise('');
+    setMax('');
+    setReps('');
+    setSets('');
+    setTime('');
+    setActiveStep(0);
   };
 
   const addProgress = () => {
     const docRef = db.collection('users').doc(user.uid);
     let payload;
-    if (exercise === 'cardio') {
-      payload = {
-        exercises: [
-          {
-            name: name,
-            exercise: exercise,
-            distance: distance,
-            time: time
-          }
-        ]
-      };
+    if (currentProgess.length === 0) {
+      if (exercise === 'cardio') {
+        payload = {
+          name: name,
+          id: 1,
+          exercise: exercise,
+          data: [
+            {
+              distance: distance,
+              time: time
+            }
+          ]
+        };
+      } else {
+        payload = {
+          name: name,
+          id: 1,
+          exercise: exercise,
+          data: [
+            {
+              reps: reps,
+              sets: sets,
+              max: max
+            }
+          ]
+        };
+      }
     } else {
-      payload = {
-        exercises: [
-          {
-            name: name,
-            exercise: exercise,
-            reps: reps,
-            sets: sets,
-            max: max
-          }
-        ]
-      };
+      if (exercise === 'cardio') {
+        payload = {
+          name: name,
+          id: currentProgess.progress.exercise.length + 1,
+          exercise: exercise,
+          data: [
+            {
+              distance: distance,
+              time: time
+            }
+          ]
+        };
+      } else {
+        payload = {
+          name: name,
+          id: currentProgess.progress.exercise.length + 1,
+          exercise: exercise,
+          data: [
+            {
+              reps: reps,
+              sets: sets,
+              max: max
+            }
+          ]
+        };
+      }
     }
 
     docRef
@@ -83,16 +189,23 @@ export const Progress = props => {
       .then(doc => {
         if (doc.exists) {
           //TODO ADD DATA
+          currentProgess.progress.exercise.push(payload);
+          docRef.set(currentProgess);
         } else {
           //TODO SET DATA
-          docRef.set({ fitness: payload });
+          docRef.set({
+            progress: {
+              exercise: [payload]
+            }
+          });
         }
       })
       .then(() => {
-        return console.log('added successfully');
+        console.log('added successfully');
+        clearForm();
       })
       .catch(e => {
-        return e;
+        console.log(e);
       });
   };
 
@@ -135,26 +248,42 @@ export const Progress = props => {
   };
   return (
     <div>
-      <Paper style={{ flexGrow: 1 }}>
+      <Paper
+        className={classes.card}
+        style={{ flexGrow: 1, marginBottom: '15px' }}
+      >
         <Tabs
+          scrollButtons='auto'
           value={tabValue}
           onChange={handleChange}
           indicatorColor='primary'
           textColor='primary'
-          centered
+          variant='scrollable'
         >
           <Tab label='Create' />
+          {currentProgess.length !== 0
+            ? currentProgess.progress.exercise.map(workout => {
+                return (
+                  <Tab
+                    key={`${workout.name}${workout.exercise}`}
+                    label={workout.name}
+                  />
+                );
+              })
+            : null}
         </Tabs>
       </Paper>
       <Grid container alignContent='center' justify='center'>
         {tabValue === 0 ? (
-          <Card style={{ minWidth: '350px' }}>
+          <Card className={classes.card}>
             <CardContent>
-              <Typography variant='h6'> Create a exercise to track </Typography>
+              <Typography style={{ textAlign: 'center' }} variant='h6'>
+                Create a exercise to track
+              </Typography>
               <List>
                 {activeStep === 0 ? (
                   <ListItem>
-                    <FormControl fullWidth>
+                    <FormControl className={classes.root} fullWidth>
                       <TextField
                         label='Name'
                         placeholder='Exercise'
@@ -167,10 +296,14 @@ export const Progress = props => {
                 ) : null}
                 {activeStep === 1 ? (
                   <ListItem>
-                    <InputLabel htmlFor='exercise-native-helper'>
+                    <InputLabel
+                      style={{ color: '#fff' }}
+                      fullWidth
+                      htmlFor='exercise-native-helper'
+                    >
                       Type of Exercise
                     </InputLabel>
-                    <FormControl fullWidth>
+                    <FormControl className={classes.root} fullWidth>
                       <NativeSelect
                         value={exercise}
                         onChange={handleExercise}
@@ -190,7 +323,7 @@ export const Progress = props => {
                 ) : null}
                 {activeStep === 2 && exercise === 'cardio' ? (
                   <ListItem>
-                    <FormControl fullWidth>
+                    <FormControl className={classes.root} fullWidth>
                       <TextField
                         label='Distance'
                         placeholder='Exercise'
@@ -203,7 +336,7 @@ export const Progress = props => {
                 ) : null}
                 {activeStep === 3 && exercise === 'cardio' ? (
                   <ListItem>
-                    <FormControl fullWidth>
+                    <FormControl className={classes.root} fullWidth>
                       <TextField
                         label='Time taken'
                         placeholder='Exercise'
@@ -216,7 +349,7 @@ export const Progress = props => {
                 ) : null}
                 {activeStep === 2 && exercise === 'strength' ? (
                   <ListItem>
-                    <FormControl fullWidth>
+                    <FormControl className={classes.root} fullWidth>
                       <TextField
                         label='Reps'
                         placeholder='Exercise'
@@ -236,7 +369,7 @@ export const Progress = props => {
                 ) : null}
                 {activeStep === 3 && exercise === 'strength' ? (
                   <ListItem>
-                    <FormControl fullWidth>
+                    <FormControl className={classes.root} fullWidth>
                       <TextField
                         label='Max weight lifted'
                         placeholder='Exercise'
@@ -250,6 +383,7 @@ export const Progress = props => {
               </List>
             </CardContent>
             <MobileStepper
+              className={classes.progress}
               variant='progress'
               steps={4}
               position='static'
@@ -281,6 +415,64 @@ export const Progress = props => {
             />
           </Card>
         ) : null}
+        {currentProgess.length !== 0
+          ? currentProgess.progress.exercise.map(item =>
+              tabValue === item.id ? (
+                <Card key={item.id}>
+                  <CardContent>
+                    <Typography style={{ textAlign: 'center' }} variant='h6'>
+                      {item.name}
+                    </Typography>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell align='center'>
+                            {item.exercise === 'cardio' ? 'Distance' : 'Reps'}
+                          </TableCell>
+                          <TableCell align='center'>
+                            {item.exercise === 'cardio' ? 'Time' : 'Sets'}
+                          </TableCell>
+                          {item.exercise === 'strength' ? (
+                            <TableCell align='center'>Max</TableCell>
+                          ) : null}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {item.exercise === 'cardio'
+                          ? item.data.map(progress => {
+                              return (
+                                <TableRow key={progress.distance}>
+                                  <TableCell align='center'>
+                                    {progress.distance}
+                                  </TableCell>
+                                  <TableCell align='center'>
+                                    {progress.time}
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })
+                          : item.data.map(progress => {
+                              return (
+                                <TableRow key={progress.max}>
+                                  <TableCell align='center'>
+                                    {progress.reps}
+                                  </TableCell>
+                                  <TableCell align='center'>
+                                    {progress.sets}
+                                  </TableCell>
+                                  <TableCell align='center'>
+                                    {progress.max}
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              ) : null
+            )
+          : null}
       </Grid>
     </div>
   );
