@@ -24,11 +24,14 @@ import {
   TableCell,
   TableRow,
   TableBody,
-  AppBar,
-  Toolbar,
-  IconButton
+  IconButton,
+  Dialog,
+  Slide,
+  DialogContent,
+  DialogActions
 } from '@material-ui/core';
-import { MdAdd, MdRemove, MdDelete } from 'react-icons/md';
+import { MdAdd, MdRemove, MdDelete, MdClose } from 'react-icons/md';
+import { progressStyle } from './style';
 
 export const Progress = props => {
   const user = firebase.auth().currentUser;
@@ -42,6 +45,7 @@ export const Progress = props => {
   const [reps, setReps] = useState('');
   const [sets, setSets] = useState('');
   const [max, setMax] = useState('');
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     handleCurrentProgess(user.uid);
@@ -59,57 +63,11 @@ export const Progress = props => {
     });
   };
 
-  const useStyles = makeStyles({
-    card: {
-      background: '#323232',
-      color: '#fff',
-      minWidth: '350px',
-      marginBottom: '5px',
-      '& .MuiMobileStepper-root': {
-        background: '#424242'
-      },
-      '& .MuiTab-textColorPrimary.Mui-selected': {
-        color: '#fff'
-      },
-      '& .MuiTabs-indicator': {
-        backgroundColor: '#fff'
-      },
-      '& .MuiTab-textColorPrimary': {
-        color: 'rgba(255, 255, 255, 0.54)'
-      }
-    },
-    root: {
-      '& label.Mui-focused': {
-        color: '#c3c3c3'
-      },
-      '& .MuiInput-underline:after': {
-        borderBottomColor: '#fff'
-      },
-      '& .MuiInputBase-input': {
-        color: '#b0b0b0'
-      },
-      '& .MuiFormLabel-root': {
-        color: '#c3c3c3'
-      }
-    },
-    progress: {
-      '& .MuiLinearProgress-colorPrimary': {
-        backgroundColor: '#fff'
-      },
-      '& .MuiLinearProgress-barColorPrimary': {
-        backgroundColor: '#212121'
-      },
-      '& .MuiButton-root': {
-        color: '#fff'
-      },
-      '& .MuiButton-root.Mui-disabled': {
-        color: '#5a5a5a'
-      }
-    },
-    whiteIcon: {
-      color: '#fff'
-    }
+  const Transition = React.forwardRef(function Transition(props, ref) {
+    return <Slide direction='up' ref={ref} {...props} />;
   });
+
+  const useStyles = makeStyles(progressStyle);
 
   const classes = useStyles();
 
@@ -187,11 +145,9 @@ export const Progress = props => {
       .get()
       .then(doc => {
         if (doc.exists) {
-          //TODO ADD DATA
           currentProgess.progress.exercise.push(payload);
           docRef.set(currentProgess);
         } else {
-          //TODO SET DATA
           docRef.set({
             progress: {
               exercise: [payload]
@@ -206,6 +162,29 @@ export const Progress = props => {
       .catch(e => {
         console.log(e);
       });
+  };
+
+  const addData = async (item, index) => {
+    let payload;
+    if (item === 'cardio') {
+      payload = {
+        time: time,
+        distance: distance
+      };
+    } else {
+      payload = {
+        reps: reps,
+        sets: sets,
+        max: max
+      };
+    }
+
+    await currentProgess.progress.exercise[index].data.push(payload);
+    handleDialong();
+
+    const docRef = db.collection('users').doc(user.uid);
+
+    docRef.set(currentProgess, { merge: true });
   };
 
   const handleChange = (event, newValue) => {
@@ -244,6 +223,11 @@ export const Progress = props => {
   };
   const handleMax = event => {
     setMax(event.target.value);
+  };
+
+  const handleDialong = () => {
+    clearForm();
+    setOpen(!open);
   };
 
   const handleDelete = index => {
@@ -426,14 +410,17 @@ export const Progress = props => {
 
         {currentProgess.length !== 0
           ? currentProgess.progress.exercise.map((item, index) =>
-              tabValue === item.id ? (
-                <div key={item.id}>
+              tabValue === index + 1 ? (
+                <div key={index}>
                   {currentProgess.length !== 0 && tabValue !== 0 ? (
                     <Paper
                       className={classes.card}
                       style={{ flexGrow: 1, marginBottom: '15px' }}
                     >
-                      <IconButton className={classes.whiteIcon}>
+                      <IconButton
+                        onClick={handleDialong}
+                        className={classes.whiteIcon}
+                      >
                         <MdAdd />
                       </IconButton>
                       <IconButton className={classes.whiteIcon}>
@@ -468,38 +455,101 @@ export const Progress = props => {
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {item.exercise === 'cardio'
-                            ? item.data.map(progress => {
-                                return (
-                                  <TableRow key={progress.distance}>
-                                    <TableCell align='center'>
-                                      {progress.distance}
-                                    </TableCell>
-                                    <TableCell align='center'>
-                                      {progress.time}
-                                    </TableCell>
-                                  </TableRow>
-                                );
-                              })
-                            : item.data.map(progress => {
-                                return (
-                                  <TableRow key={progress.max}>
-                                    <TableCell align='center'>
-                                      {progress.reps}
-                                    </TableCell>
-                                    <TableCell align='center'>
-                                      {progress.sets}
-                                    </TableCell>
-                                    <TableCell align='center'>
-                                      {progress.max}
-                                    </TableCell>
-                                  </TableRow>
-                                );
-                              })}
+                          {item.data.map((progress, index) => {
+                            if (item.exercise === 'cardio') {
+                              return (
+                                <TableRow key={index}>
+                                  <TableCell align='center'>
+                                    {progress.distance}
+                                  </TableCell>
+                                  <TableCell align='center'>
+                                    {progress.time}
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            } else {
+                              return (
+                                <TableRow key={index}>
+                                  <TableCell align='center'>
+                                    {progress.reps}
+                                  </TableCell>
+                                  <TableCell align='center'>
+                                    {progress.sets}
+                                  </TableCell>
+                                  <TableCell align='center'>
+                                    {progress.max}
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            }
+                          })}
                         </TableBody>
                       </Table>
                     </CardContent>
                   </Card>
+                  <Dialog open={open} onClose={handleDialong}>
+                    <DialogContent>
+                      {item.exercise === 'cardio' ? (
+                        <div>
+                          <TextField
+                            className={classes.dialogCard}
+                            autoFocus
+                            margin='dense'
+                            id='distance'
+                            label='Distance'
+                            type='text'
+                            fullWidth
+                            onChange={handleDistance}
+                          />
+                          <TextField
+                            className={classes.dialogCard}
+                            margin='dense'
+                            id='time'
+                            label='Time'
+                            type='text'
+                            fullWidth
+                            onChange={handleTime}
+                          />
+                        </div>
+                      ) : (
+                        <div>
+                          <TextField
+                            className={classes.dialogCard}
+                            autoFocus
+                            margin='dense'
+                            id='reps'
+                            label='Reps'
+                            type='text'
+                            fullWidth
+                            onChange={handleReps}
+                          />
+                          <TextField
+                            className={classes.dialogCard}
+                            margin='dense'
+                            id='sets'
+                            label='Sets'
+                            type='text'
+                            fullWidth
+                            onChange={handleSets}
+                          />
+                          <TextField
+                            className={classes.dialogCard}
+                            margin='dense'
+                            id='max'
+                            label='Max'
+                            type='text'
+                            fullWidth
+                            onChange={handleMax}
+                          />
+                        </div>
+                      )}
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={() => addData(item.exercise, index)}>
+                        Done
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
                 </div>
               ) : null
             )
