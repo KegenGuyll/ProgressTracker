@@ -46,6 +46,7 @@ export const Progress = props => {
   const [sets, setSets] = useState('');
   const [max, setMax] = useState('');
   const [open, setOpen] = useState(false);
+  const [remove, setRemove] = useState(false);
 
   useEffect(() => {
     handleCurrentProgess(user.uid);
@@ -230,12 +231,22 @@ export const Progress = props => {
     setOpen(!open);
   };
 
+  const handleRemoveToggle = () => {
+    setRemove(!remove);
+  };
+
+  const handleRemoveData = async (item, ExIndex, DaIndex) => {
+    await currentProgess.progress.exercise[ExIndex].data.splice(DaIndex, 1);
+    const docRef = db.collection('users').doc(user.uid);
+    docRef.set(currentProgess, { merge: true });
+  };
+
   const handleDelete = index => {
     currentProgess.progress.exercise.splice(index, 1);
 
     const docRef = db.collection('users').doc(user.uid);
 
-    docRef.set(currentProgess);
+    docRef.set(currentProgess, { merge: true });
   };
 
   return (
@@ -423,7 +434,10 @@ export const Progress = props => {
                       >
                         <MdAdd />
                       </IconButton>
-                      <IconButton className={classes.whiteIcon}>
+                      <IconButton
+                        onClick={handleRemoveToggle}
+                        className={classes.whiteIcon}
+                      >
                         <MdRemove />
                       </IconButton>
                       <IconButton
@@ -443,6 +457,9 @@ export const Progress = props => {
                       <Table>
                         <TableHead>
                           <TableRow>
+                            {remove ? (
+                              <TableCell align='center'>Remove</TableCell>
+                            ) : null}
                             <TableCell align='center'>
                               {item.exercise === 'cardio' ? 'Distance' : 'Reps'}
                             </TableCell>
@@ -455,10 +472,30 @@ export const Progress = props => {
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {item.data.map((progress, index) => {
+                          {item.data.map((progress, daIndex) => {
                             if (item.exercise === 'cardio') {
                               return (
-                                <TableRow key={index}>
+                                <TableRow key={daIndex}>
+                                  {remove ? (
+                                    <TableCell align='center'>
+                                      <IconButton
+                                        onClick={() =>
+                                          handleRemoveData(
+                                            item.exercise,
+                                            index,
+                                            daIndex
+                                          )
+                                        }
+                                      >
+                                        <MdClose
+                                          style={{
+                                            height: '15px',
+                                            color: 'red'
+                                          }}
+                                        />
+                                      </IconButton>
+                                    </TableCell>
+                                  ) : null}
                                   <TableCell align='center'>
                                     {progress.distance}
                                   </TableCell>
@@ -469,7 +506,27 @@ export const Progress = props => {
                               );
                             } else {
                               return (
-                                <TableRow key={index}>
+                                <TableRow key={daIndex}>
+                                  {remove ? (
+                                    <TableCell align='center'>
+                                      <IconButton
+                                        onClick={() =>
+                                          handleRemoveData(
+                                            item.exercise,
+                                            index,
+                                            daIndex
+                                          )
+                                        }
+                                      >
+                                        <MdClose
+                                          style={{
+                                            height: '15px',
+                                            color: 'red'
+                                          }}
+                                        />
+                                      </IconButton>
+                                    </TableCell>
+                                  ) : null}
                                   <TableCell align='center'>
                                     {progress.reps}
                                   </TableCell>
