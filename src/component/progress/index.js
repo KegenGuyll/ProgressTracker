@@ -23,8 +23,15 @@ import {
   TableHead,
   TableCell,
   TableRow,
-  TableBody
+  TableBody,
+  IconButton,
+  Dialog,
+  Slide,
+  DialogContent,
+  DialogActions
 } from '@material-ui/core';
+import { MdAdd, MdRemove, MdDelete, MdClose } from 'react-icons/md';
+import { progressStyle } from './style';
 
 export const Progress = props => {
   const user = firebase.auth().currentUser;
@@ -38,6 +45,8 @@ export const Progress = props => {
   const [reps, setReps] = useState('');
   const [sets, setSets] = useState('');
   const [max, setMax] = useState('');
+  const [open, setOpen] = useState(false);
+  const [remove, setRemove] = useState(false);
 
   useEffect(() => {
     handleCurrentProgess(user.uid);
@@ -45,14 +54,6 @@ export const Progress = props => {
 
   const handleCurrentProgess = async uid => {
     const docRef = db.collection('users').doc(uid);
-    // docRef.get().then(doc => {
-    //   if (doc.exists) {
-    //     setCurrentProgress(doc.data());
-    //     console.log(doc.data());
-    //   } else {
-    //     console.log('did not find');
-    //   }
-    // });
     docRef.onSnapshot(doc => {
       if (doc.exists) {
         setCurrentProgress(doc.data());
@@ -63,54 +64,11 @@ export const Progress = props => {
     });
   };
 
-  const useStyles = makeStyles({
-    card: {
-      background: '#323232',
-      color: '#fff',
-      minWidth: '350px',
-      marginBottom: '5px',
-      '& .MuiMobileStepper-root': {
-        background: '#424242'
-      },
-      '& .MuiTab-textColorPrimary.Mui-selected': {
-        color: '#fff'
-      },
-      '& .MuiTabs-indicator': {
-        backgroundColor: '#fff'
-      },
-      '& .MuiTab-textColorPrimary': {
-        color: 'rgba(255, 255, 255, 0.54)'
-      }
-    },
-    root: {
-      '& label.Mui-focused': {
-        color: '#c3c3c3'
-      },
-      '& .MuiInput-underline:after': {
-        borderBottomColor: '#fff'
-      },
-      '& .MuiInputBase-input': {
-        color: '#b0b0b0'
-      },
-      '& .MuiFormLabel-root': {
-        color: '#c3c3c3'
-      }
-    },
-    progress: {
-      '& .MuiLinearProgress-colorPrimary': {
-        backgroundColor: '#fff'
-      },
-      '& .MuiLinearProgress-barColorPrimary': {
-        backgroundColor: '#212121'
-      },
-      '& .MuiButton-root': {
-        color: '#fff'
-      },
-      '& .MuiButton-root.Mui-disabled': {
-        color: '#5a5a5a'
-      }
-    }
+  const Transition = React.forwardRef(function Transition(props, ref) {
+    return <Slide direction='up' ref={ref} {...props} />;
   });
+
+  const useStyles = makeStyles(progressStyle);
 
   const classes = useStyles();
 
@@ -188,11 +146,9 @@ export const Progress = props => {
       .get()
       .then(doc => {
         if (doc.exists) {
-          //TODO ADD DATA
           currentProgess.progress.exercise.push(payload);
           docRef.set(currentProgess);
         } else {
-          //TODO SET DATA
           docRef.set({
             progress: {
               exercise: [payload]
@@ -207,6 +163,29 @@ export const Progress = props => {
       .catch(e => {
         console.log(e);
       });
+  };
+
+  const addData = async (item, index) => {
+    let payload;
+    if (item === 'cardio') {
+      payload = {
+        time: time,
+        distance: distance
+      };
+    } else {
+      payload = {
+        reps: reps,
+        sets: sets,
+        max: max
+      };
+    }
+
+    await currentProgess.progress.exercise[index].data.push(payload);
+    handleDialong();
+
+    const docRef = db.collection('users').doc(user.uid);
+
+    docRef.set(currentProgess, { merge: true });
   };
 
   const handleChange = (event, newValue) => {
@@ -246,6 +225,30 @@ export const Progress = props => {
   const handleMax = event => {
     setMax(event.target.value);
   };
+
+  const handleDialong = () => {
+    clearForm();
+    setOpen(!open);
+  };
+
+  const handleRemoveToggle = () => {
+    setRemove(!remove);
+  };
+
+  const handleRemoveData = async (item, ExIndex, DaIndex) => {
+    await currentProgess.progress.exercise[ExIndex].data.splice(DaIndex, 1);
+    const docRef = db.collection('users').doc(user.uid);
+    docRef.set(currentProgess, { merge: true });
+  };
+
+  const handleDelete = index => {
+    currentProgess.progress.exercise.splice(index, 1);
+
+    const docRef = db.collection('users').doc(user.uid);
+
+    docRef.set(currentProgess, { merge: true });
+  };
+
   return (
     <div>
       <Paper
@@ -415,33 +418,84 @@ export const Progress = props => {
             />
           </Card>
         ) : null}
+
         {currentProgess.length !== 0
-          ? currentProgess.progress.exercise.map(item =>
-              tabValue === item.id ? (
-                <Card key={item.id}>
-                  <CardContent>
-                    <Typography style={{ textAlign: 'center' }} variant='h6'>
-                      {item.name}
-                    </Typography>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell align='center'>
-                            {item.exercise === 'cardio' ? 'Distance' : 'Reps'}
-                          </TableCell>
-                          <TableCell align='center'>
-                            {item.exercise === 'cardio' ? 'Time' : 'Sets'}
-                          </TableCell>
-                          {item.exercise === 'strength' ? (
-                            <TableCell align='center'>Max</TableCell>
-                          ) : null}
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {item.exercise === 'cardio'
-                          ? item.data.map(progress => {
+          ? currentProgess.progress.exercise.map((item, index) =>
+              tabValue === index + 1 ? (
+                <div key={index}>
+                  {currentProgess.length !== 0 && tabValue !== 0 ? (
+                    <Paper
+                      className={classes.card}
+                      style={{ flexGrow: 1, marginBottom: '15px' }}
+                    >
+                      <IconButton
+                        onClick={handleDialong}
+                        className={classes.whiteIcon}
+                      >
+                        <MdAdd />
+                      </IconButton>
+                      <IconButton
+                        onClick={handleRemoveToggle}
+                        className={classes.whiteIcon}
+                      >
+                        <MdRemove />
+                      </IconButton>
+                      <IconButton
+                        className={classes.whiteIcon}
+                        style={{ float: 'right' }}
+                        onClick={() => handleDelete(index)}
+                      >
+                        <MdDelete />
+                      </IconButton>
+                    </Paper>
+                  ) : null}
+                  <Card>
+                    <CardContent>
+                      <Typography style={{ textAlign: 'center' }} variant='h6'>
+                        {item.name}
+                      </Typography>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            {remove ? (
+                              <TableCell align='center'>Remove</TableCell>
+                            ) : null}
+                            <TableCell align='center'>
+                              {item.exercise === 'cardio' ? 'Distance' : 'Reps'}
+                            </TableCell>
+                            <TableCell align='center'>
+                              {item.exercise === 'cardio' ? 'Time' : 'Sets'}
+                            </TableCell>
+                            {item.exercise === 'strength' ? (
+                              <TableCell align='center'>Max</TableCell>
+                            ) : null}
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {item.data.map((progress, daIndex) => {
+                            if (item.exercise === 'cardio') {
                               return (
-                                <TableRow key={progress.distance}>
+                                <TableRow key={daIndex}>
+                                  {remove ? (
+                                    <TableCell align='center'>
+                                      <IconButton
+                                        onClick={() =>
+                                          handleRemoveData(
+                                            item.exercise,
+                                            index,
+                                            daIndex
+                                          )
+                                        }
+                                      >
+                                        <MdClose
+                                          style={{
+                                            height: '15px',
+                                            color: 'red'
+                                          }}
+                                        />
+                                      </IconButton>
+                                    </TableCell>
+                                  ) : null}
                                   <TableCell align='center'>
                                     {progress.distance}
                                   </TableCell>
@@ -450,10 +504,29 @@ export const Progress = props => {
                                   </TableCell>
                                 </TableRow>
                               );
-                            })
-                          : item.data.map(progress => {
+                            } else {
                               return (
-                                <TableRow key={progress.max}>
+                                <TableRow key={daIndex}>
+                                  {remove ? (
+                                    <TableCell align='center'>
+                                      <IconButton
+                                        onClick={() =>
+                                          handleRemoveData(
+                                            item.exercise,
+                                            index,
+                                            daIndex
+                                          )
+                                        }
+                                      >
+                                        <MdClose
+                                          style={{
+                                            height: '15px',
+                                            color: 'red'
+                                          }}
+                                        />
+                                      </IconButton>
+                                    </TableCell>
+                                  ) : null}
                                   <TableCell align='center'>
                                     {progress.reps}
                                   </TableCell>
@@ -465,11 +538,76 @@ export const Progress = props => {
                                   </TableCell>
                                 </TableRow>
                               );
-                            })}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
+                            }
+                          })}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                  <Dialog open={open} onClose={handleDialong}>
+                    <DialogContent>
+                      {item.exercise === 'cardio' ? (
+                        <div>
+                          <TextField
+                            className={classes.dialogCard}
+                            autoFocus
+                            margin='dense'
+                            id='distance'
+                            label='Distance'
+                            type='text'
+                            fullWidth
+                            onChange={handleDistance}
+                          />
+                          <TextField
+                            className={classes.dialogCard}
+                            margin='dense'
+                            id='time'
+                            label='Time'
+                            type='text'
+                            fullWidth
+                            onChange={handleTime}
+                          />
+                        </div>
+                      ) : (
+                        <div>
+                          <TextField
+                            className={classes.dialogCard}
+                            autoFocus
+                            margin='dense'
+                            id='reps'
+                            label='Reps'
+                            type='text'
+                            fullWidth
+                            onChange={handleReps}
+                          />
+                          <TextField
+                            className={classes.dialogCard}
+                            margin='dense'
+                            id='sets'
+                            label='Sets'
+                            type='text'
+                            fullWidth
+                            onChange={handleSets}
+                          />
+                          <TextField
+                            className={classes.dialogCard}
+                            margin='dense'
+                            id='max'
+                            label='Max'
+                            type='text'
+                            fullWidth
+                            onChange={handleMax}
+                          />
+                        </div>
+                      )}
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={() => addData(item.exercise, index)}>
+                        Done
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </div>
               ) : null
             )
           : null}
