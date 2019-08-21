@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Grid,
   Paper,
@@ -10,6 +10,9 @@ import LineChart from '../graph/LineChart';
 import { makeStyles } from '@material-ui/core/styles';
 import { MdExpandMore } from 'react-icons/md';
 import mockData from '../mockData/progess.json';
+import firebase from 'firebase';
+import db from '../../credentials/firebaseConfig';
+import { graphDataFormat } from '../api/graphDataFormat';
 
 export const Dashboard = props => {
   const useStyles = makeStyles({
@@ -29,15 +32,47 @@ export const Dashboard = props => {
     }
   });
 
+  const [progression, setProgression] = useState({});
+
   const data = mockData;
 
-  const payload = {
-    spreadsheetid: '1-CJNOJtlKOso2jzEPT0pLOUxbbuVItzj-FrjcqTzU-I'
+  const classes = useStyles();
+
+  const user = firebase.auth().currentUser;
+
+  const test = data => {
+    const payload = graphDataFormat(data);
   };
 
-  const classes = useStyles();
+  useEffect(() => {
+    const docRef = db.collection('users').doc(user.uid);
+    docRef.onSnapshot(doc => {
+      if (doc.exists) {
+        setProgression(doc.data());
+        console.log(doc.data());
+        test(doc.data());
+      } else {
+        console.log('did not find');
+      }
+    });
+  }, []);
+
   return (
     <Grid container alignContent='center' justify='center'>
+      {progression.progress
+        ? progression.progress.exercise.map((item, index) => {
+            return (
+              <ExpansionPanel key={index} className={classes.card}>
+                <ExpansionPanelSummary
+                  expandIcon={<MdExpandMore />}
+                  aria-controls='Expand graph for data'
+                >
+                  {`${item.name} Progression`}
+                </ExpansionPanelSummary>
+              </ExpansionPanel>
+            );
+          })
+        : null}
       {data.map((item, index) => {
         return (
           <ExpansionPanel key={index} className={classes.card}>

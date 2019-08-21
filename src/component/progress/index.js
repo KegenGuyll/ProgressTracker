@@ -10,15 +10,8 @@ import {
   Card,
   CardContent,
   Typography,
-  List,
-  ListItem,
-  FormControl,
-  InputLabel,
   TextField,
-  MobileStepper,
   Button,
-  NativeSelect,
-  Input,
   Table,
   TableHead,
   TableCell,
@@ -26,20 +19,17 @@ import {
   TableBody,
   IconButton,
   Dialog,
-  Slide,
   DialogContent,
   DialogActions
 } from '@material-ui/core';
 import { MdAdd, MdRemove, MdDelete, MdClose } from 'react-icons/md';
 import { progressStyle } from './style';
+import CreateExercise from './createExercise';
 
 export const Progress = props => {
   const user = firebase.auth().currentUser;
   const [currentProgess, setCurrentProgress] = useState([]);
-  const [activeStep, setActiveStep] = React.useState(0);
   const [tabValue, setTabValue] = useState(0);
-  const [name, setName] = useState('');
-  const [exercise, setExercise] = useState('');
   const [distance, setDistance] = useState('');
   const [time, setTime] = useState('');
   const [reps, setReps] = useState('');
@@ -64,106 +54,9 @@ export const Progress = props => {
     });
   };
 
-  const Transition = React.forwardRef(function Transition(props, ref) {
-    return <Slide direction='up' ref={ref} {...props} />;
-  });
-
   const useStyles = makeStyles(progressStyle);
 
   const classes = useStyles();
-
-  const clearForm = async () => {
-    setName('');
-    setDistance('');
-    setExercise('');
-    setMax('');
-    setReps('');
-    setSets('');
-    setTime('');
-    setActiveStep(0);
-  };
-
-  const addProgress = () => {
-    const docRef = db.collection('users').doc(user.uid);
-    let payload;
-    if (currentProgess.length === 0) {
-      if (exercise === 'cardio') {
-        payload = {
-          name: name,
-          id: 1,
-          exercise: exercise,
-          data: [
-            {
-              distance: distance,
-              time: time
-            }
-          ]
-        };
-      } else {
-        payload = {
-          name: name,
-          id: 1,
-          exercise: exercise,
-          data: [
-            {
-              reps: reps,
-              sets: sets,
-              max: max
-            }
-          ]
-        };
-      }
-    } else {
-      if (exercise === 'cardio') {
-        payload = {
-          name: name,
-          id: currentProgess.progress.exercise.length + 1,
-          exercise: exercise,
-          data: [
-            {
-              distance: distance,
-              time: time
-            }
-          ]
-        };
-      } else {
-        payload = {
-          name: name,
-          id: currentProgess.progress.exercise.length + 1,
-          exercise: exercise,
-          data: [
-            {
-              reps: reps,
-              sets: sets,
-              max: max
-            }
-          ]
-        };
-      }
-    }
-
-    docRef
-      .get()
-      .then(doc => {
-        if (doc.exists) {
-          currentProgess.progress.exercise.push(payload);
-          docRef.set(currentProgess);
-        } else {
-          docRef.set({
-            progress: {
-              exercise: [payload]
-            }
-          });
-        }
-      })
-      .then(() => {
-        console.log('added successfully');
-        clearForm();
-      })
-      .catch(e => {
-        console.log(e);
-      });
-  };
 
   const addData = async (item, index) => {
     let payload;
@@ -188,20 +81,53 @@ export const Progress = props => {
     docRef.set(currentProgess, { merge: true });
   };
 
+  const sendPayload = payload => {
+    const categories = [];
+    let information = {};
+
+    if (
+      payload.exercise_type === 'cardio' &&
+      payload.time !== '' &&
+      payload.distance !== ''
+    ) {
+      categories.push('time');
+      categories.push('distance');
+      information = {
+        distance: payload.distance,
+        distance_unit: payload.distanceUnit,
+        time: payload.time,
+        time_unit: payload.timeUnit,
+        date: new Date()
+      };
+    } else if (
+      payload.exercise_type === 'strength' &&
+      payload.reps !== '' &&
+      payload.sets !== '' &&
+      payload.max !== ''
+    ) {
+      categories.push('reps');
+      categories.push('sets');
+      categories.push('max');
+      information = {
+        reps: payload.reps,
+        sets: payload.sets,
+        max: payload.max,
+        date: new Date()
+      };
+    }
+
+    const data = {
+      name: payload.name,
+      exercise_type: payload.exercise_type,
+      categories: categories,
+      data: information
+    };
+
+    console.log(data);
+  };
+
   const handleChange = (event, newValue) => {
     setTabValue(newValue);
-  };
-
-  const handleNext = () => {
-    setActiveStep(prevActiveStep => prevActiveStep + 1);
-  };
-
-  const handleBack = () => {
-    setActiveStep(prevActiveStep => prevActiveStep - 1);
-  };
-
-  const handleName = event => {
-    setName(event.target.value);
   };
 
   const handleDistance = event => {
@@ -210,10 +136,6 @@ export const Progress = props => {
 
   const handleTime = event => {
     setTime(event.target.value);
-  };
-
-  const handleExercise = event => {
-    setExercise(event.target.value);
   };
 
   const handleReps = event => {
@@ -227,7 +149,6 @@ export const Progress = props => {
   };
 
   const handleDialong = () => {
-    clearForm();
     setOpen(!open);
   };
 
@@ -277,148 +198,7 @@ export const Progress = props => {
         </Tabs>
       </Paper>
       <Grid container alignContent='center' justify='center'>
-        {tabValue === 0 ? (
-          <Card className={classes.card}>
-            <CardContent>
-              <Typography style={{ textAlign: 'center' }} variant='h6'>
-                Create a exercise to track
-              </Typography>
-              <List>
-                {activeStep === 0 ? (
-                  <ListItem>
-                    <FormControl className={classes.root} fullWidth>
-                      <TextField
-                        label='Name'
-                        placeholder='Exercise'
-                        type='text'
-                        onChange={handleName}
-                        value={name}
-                      />
-                    </FormControl>
-                  </ListItem>
-                ) : null}
-                {activeStep === 1 ? (
-                  <ListItem>
-                    <InputLabel
-                      style={{ color: '#fff' }}
-                      fullWidth
-                      htmlFor='exercise-native-helper'
-                    >
-                      Type of Exercise
-                    </InputLabel>
-                    <FormControl className={classes.root} fullWidth>
-                      <NativeSelect
-                        value={exercise}
-                        onChange={handleExercise}
-                        input={
-                          <Input
-                            name='Type of Exercise'
-                            id='exercise-native-helper'
-                          />
-                        }
-                      >
-                        <option value='' />
-                        <option value='strength'>Strength</option>
-                        <option value='cardio'>Cardio</option>
-                      </NativeSelect>
-                    </FormControl>
-                  </ListItem>
-                ) : null}
-                {activeStep === 2 && exercise === 'cardio' ? (
-                  <ListItem>
-                    <FormControl className={classes.root} fullWidth>
-                      <TextField
-                        label='Distance'
-                        placeholder='Exercise'
-                        type='text'
-                        onChange={handleDistance}
-                        value={distance}
-                      />
-                    </FormControl>
-                  </ListItem>
-                ) : null}
-                {activeStep === 3 && exercise === 'cardio' ? (
-                  <ListItem>
-                    <FormControl className={classes.root} fullWidth>
-                      <TextField
-                        label='Time taken'
-                        placeholder='Exercise'
-                        type='text'
-                        onChange={handleTime}
-                        value={time}
-                      />
-                    </FormControl>
-                  </ListItem>
-                ) : null}
-                {activeStep === 2 && exercise === 'strength' ? (
-                  <ListItem>
-                    <FormControl className={classes.root} fullWidth>
-                      <TextField
-                        label='Reps'
-                        placeholder='Exercise'
-                        type='text'
-                        onChange={handleReps}
-                        value={reps}
-                      />
-                      <TextField
-                        label='Sets'
-                        placeholder='Exercise'
-                        type='text'
-                        onChange={handleSets}
-                        value={sets}
-                      />
-                    </FormControl>
-                  </ListItem>
-                ) : null}
-                {activeStep === 3 && exercise === 'strength' ? (
-                  <ListItem>
-                    <FormControl className={classes.root} fullWidth>
-                      <TextField
-                        label='Max weight lifted'
-                        placeholder='Exercise'
-                        type='text'
-                        onChange={handleMax}
-                        value={max}
-                      />
-                    </FormControl>
-                  </ListItem>
-                ) : null}
-              </List>
-            </CardContent>
-            <MobileStepper
-              className={classes.progress}
-              variant='progress'
-              steps={4}
-              position='static'
-              activeStep={activeStep}
-              nextButton={
-                activeStep !== 3 ? (
-                  <Button
-                    onClick={handleNext}
-                    disabled={activeStep === 3}
-                    size='small'
-                  >
-                    Next
-                  </Button>
-                ) : (
-                  <Button size='small' onClick={addProgress}>
-                    Create
-                  </Button>
-                )
-              }
-              backButton={
-                <Button
-                  onClick={handleBack}
-                  disabled={activeStep === 0}
-                  size='small'
-                >
-                  Back
-                </Button>
-              }
-            />
-          </Card>
-        ) : null}
-
+        {tabValue === 0 ? <CreateExercise sendPayload={sendPayload} /> : null}
         {currentProgess.length !== 0
           ? currentProgess.progress.exercise.map((item, index) =>
               tabValue === index + 1 ? (
@@ -460,20 +240,18 @@ export const Progress = props => {
                             {remove ? (
                               <TableCell align='center'>Remove</TableCell>
                             ) : null}
-                            <TableCell align='center'>
-                              {item.exercise === 'cardio' ? 'Distance' : 'Reps'}
-                            </TableCell>
-                            <TableCell align='center'>
-                              {item.exercise === 'cardio' ? 'Time' : 'Sets'}
-                            </TableCell>
-                            {item.exercise === 'strength' ? (
-                              <TableCell align='center'>Max</TableCell>
-                            ) : null}
+                            {item.categories.map(category => {
+                              return (
+                                <TableCell align='center' key={category}>
+                                  {category}
+                                </TableCell>
+                              );
+                            })}
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           {item.data.map((progress, daIndex) => {
-                            if (item.exercise === 'cardio') {
+                            if (item.exercise_type === 'cardio') {
                               return (
                                 <TableRow key={daIndex}>
                                   {remove ? (
@@ -546,7 +324,7 @@ export const Progress = props => {
                   </Card>
                   <Dialog open={open} onClose={handleDialong}>
                     <DialogContent>
-                      {item.exercise === 'cardio' ? (
+                      {item.exercise_type === 'cardio' ? (
                         <div>
                           <TextField
                             className={classes.dialogCard}
