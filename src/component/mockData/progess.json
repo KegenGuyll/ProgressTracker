@@ -12,12 +12,16 @@
   },
   {
     "xaxis": {
-      "categories": ["week 1", "week 2", "week 3", "week 4", "week 5"]
+      "categories": ["reps", "sets", "max"]
     },
     "series": [
       {
-        "name": "Squat",
-        "data": [100, 140, 210, 200, 250]
+        "name": "Week 1",
+        "data": [15, 3, 150]
+      },
+      {
+        "name": "Week 2",
+        "data": [10, 2, 175]
       }
     ]
   }

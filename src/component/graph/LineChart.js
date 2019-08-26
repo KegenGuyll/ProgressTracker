@@ -49,7 +49,7 @@ class LineChart extends React.Component {
           colors: ['#fff']
         },
         xaxis: {
-          categories: props.data.xaxis.categories,
+          categories: props.data.categories,
           labels: {
             show: false
           },
@@ -69,13 +69,22 @@ class LineChart extends React.Component {
           show: false
         }
       },
-      series: [
-        {
-          name: props.data.series[0].name,
-          data: props.data.series[0].data
-        }
-      ]
+      series: []
     };
+  }
+
+  componentDidMount() {
+    console.log(this.props.data);
+    this.props.data.data.map((item, index) => {
+      this.state.series.push({
+        name: `Week ${index + 1}`,
+        data: [item.reps, item.sets, item.max]
+      });
+    }, console.log(this.state.series));
+    // {
+    //   name: props.data.series[0].name,
+    //     data: props.data.series[0].data
+    // }
   }
 
   render() {

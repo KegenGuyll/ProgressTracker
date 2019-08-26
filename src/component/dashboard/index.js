@@ -13,6 +13,7 @@ import mockData from '../mockData/progess.json';
 import firebase from 'firebase';
 import db from '../../credentials/firebaseConfig';
 import { graphDataFormat } from '../api/graphDataFormat';
+import BarChart from '../graph/BarChart';
 
 export const Dashboard = props => {
   const useStyles = makeStyles({
@@ -34,15 +35,9 @@ export const Dashboard = props => {
 
   const [progression, setProgression] = useState({});
 
-  const data = mockData;
-
   const classes = useStyles();
 
   const user = firebase.auth().currentUser;
-
-  const test = data => {
-    const payload = graphDataFormat(data);
-  };
 
   useEffect(() => {
     const docRef = db.collection('users').doc(user.uid);
@@ -50,7 +45,6 @@ export const Dashboard = props => {
       if (doc.exists) {
         setProgression(doc.data());
         console.log(doc.data());
-        test(doc.data());
       } else {
         console.log('did not find');
       }
@@ -69,31 +63,19 @@ export const Dashboard = props => {
                 >
                   {`${item.name} Progression`}
                 </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                  <Paper className={classes.graphcard}>
+                    <Grid container direction='column'>
+                      <Grid item>
+                        <LineChart data={item} />
+                      </Grid>
+                    </Grid>
+                  </Paper>
+                </ExpansionPanelDetails>
               </ExpansionPanel>
             );
           })
         : null}
-      {data.map((item, index) => {
-        return (
-          <ExpansionPanel key={index} className={classes.card}>
-            <ExpansionPanelSummary
-              expandIcon={<MdExpandMore />}
-              aria-controls='Expand graph for data'
-            >
-              {`${item.series[0].name} Progression`}
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
-              <Paper className={classes.graphcard}>
-                <Grid container direction='column'>
-                  <Grid item>
-                    <LineChart data={item} />
-                  </Grid>
-                </Grid>
-              </Paper>
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-        );
-      })}
     </Grid>
   );
 };

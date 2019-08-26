@@ -25,6 +25,8 @@ import {
 import { MdAdd, MdRemove, MdDelete, MdClose } from 'react-icons/md';
 import { progressStyle } from './style';
 import CreateExercise from './createExercise';
+import axios from 'axios';
+const uuidv1 = require('uuid/v1');
 
 export const Progress = props => {
   const user = firebase.auth().currentUser;
@@ -37,6 +39,7 @@ export const Progress = props => {
   const [max, setMax] = useState('');
   const [open, setOpen] = useState(false);
   const [remove, setRemove] = useState(false);
+  const docRef = db.collection('users').doc(user.uid);
 
   useEffect(() => {
     handleCurrentProgess(user.uid);
@@ -63,25 +66,31 @@ export const Progress = props => {
     if (item === 'cardio') {
       payload = {
         time: time,
-        distance: distance
+        distance: distance,
+        date: new Date()
       };
     } else {
       payload = {
         reps: reps,
         sets: sets,
-        max: max
+        max: max,
+        date: new Date()
       };
     }
-
     await currentProgess.progress.exercise[index].data.push(payload);
-    handleDialong();
-
-    const docRef = db.collection('users').doc(user.uid);
-
-    docRef.set(currentProgess, { merge: true });
+    await docRef.set(currentProgess, { merge: true });
   };
 
-  const sendPayload = payload => {
+  const setData = payload => {
+    docRef.get().then(doc => {
+      if (doc.exists) {
+        currentProgess.progress.exercise.push(payload);
+        docRef.set(currentProgess, { merge: true });
+      } else docRef.set({ progress: { exercise: [payload] } });
+    });
+  };
+
+  const Payload = async payload => {
     const categories = [];
     let information = {};
 
@@ -114,16 +123,19 @@ export const Progress = props => {
         max: payload.max,
         date: new Date()
       };
+    } else {
+      throw new Error('Did fill all values');
     }
 
     const data = {
       name: payload.name,
       exercise_type: payload.exercise_type,
+      id: uuidv1(),
       categories: categories,
-      data: information
+      data: [information]
     };
 
-    console.log(data);
+    setData(data);
   };
 
   const handleChange = (event, newValue) => {
@@ -158,14 +170,12 @@ export const Progress = props => {
 
   const handleRemoveData = async (item, ExIndex, DaIndex) => {
     await currentProgess.progress.exercise[ExIndex].data.splice(DaIndex, 1);
-    const docRef = db.collection('users').doc(user.uid);
+
     docRef.set(currentProgess, { merge: true });
   };
 
   const handleDelete = index => {
     currentProgess.progress.exercise.splice(index, 1);
-
-    const docRef = db.collection('users').doc(user.uid);
 
     docRef.set(currentProgess, { merge: true });
   };
@@ -198,7 +208,7 @@ export const Progress = props => {
         </Tabs>
       </Paper>
       <Grid container alignContent='center' justify='center'>
-        {tabValue === 0 ? <CreateExercise sendPayload={sendPayload} /> : null}
+        {tabValue === 0 ? <CreateExercise sendPayload={Payload} /> : null}
         {currentProgess.length !== 0
           ? currentProgess.progress.exercise.map((item, index) =>
               tabValue === index + 1 ? (
