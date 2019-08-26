@@ -8,18 +8,21 @@ import { Friends } from './component/friends';
 import { Progress } from './component/progress';
 import { Settings } from './component/settings';
 import 'react-toastify/dist/ReactToastify.css';
+import ErrorBoundary from './error';
 
 const App = props => {
   return (
     <Router>
       <Navigation user={props.user}>
-        <Switch>
-          <Route exact path='/' component={Dashboard} />
-          <Route exact path='/explore' component={Explore} />
-          <Route exact path='/friends' component={Friends} />
-          <Route exact path='/progress' component={Progress} />
-          <Route exact path='/settings' component={Settings} />
-        </Switch>
+        <ErrorBoundary>
+          <Switch>
+            <Route exact path='/' component={Dashboard} />
+            <Route exact path='/explore' component={Explore} />
+            <Route exact path='/friends' component={Friends} />
+            <Route exact path='/progress' component={Progress} />
+            <Route exact path='/settings' component={Settings} />
+          </Switch>
+        </ErrorBoundary>
       </Navigation>
     </Router>
   );
